@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use reqwest;
 use serde::Deserialize;
+use serde_json::Value;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -36,13 +37,22 @@ enum PublicationDemographic {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
-enum MangaStatus {
+enum ReadingStatus {
     Reading,
     OnHold,
     PlanToRead,
     Dropped,
     Rereading,
     Completed,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum MangaStatus {
+    Ongoing,
+    Completed,
+    Hiatus,
+    Cancelled,
 }
 
 #[derive(Debug, Deserialize)]
@@ -69,6 +79,7 @@ struct MangaAttributes {
     title: HashMap<String, String>,
     alt_titles: Vec<HashMap<String, String>>,
     description: HashMap<String, String>,
+    links: HashMap<String, String>,
     is_locked: bool,
     original_language: String,
     last_volume: String,
@@ -77,10 +88,10 @@ struct MangaAttributes {
     status: MangaStatus,
     year: u32,
     content_rating: ContentRating,
-    chapter_number_reset_on_new_volume: bool,
+    chapter_number_reset_on_new_volume: Option<bool>,
     available_translated_languages: Vec<String>,
     latest_uploaded_chapter: String,
-    tags: Vec<HashMap<String, String>>,
+    tags: Value, // lazy, nested objects
     state: MangaState,
     version: u32, // to be safe
     created_at: String,
@@ -91,6 +102,8 @@ struct MangaAttributes {
 struct Manga {
     id: String,
     r#type: EntityType,
+    attributes: MangaAttributes,
+    relationships: Value, // lazy here
 }
 
 #[derive(Debug, Deserialize)]
